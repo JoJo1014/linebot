@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: linebot-app
+    ports:
+      - "5000:5000"
+    env_file:
+      - pw.env
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      TZ: Asia/Taipei
+      MYSQL_ROOT_PASSWORD: jjoo8989123
+      MYSQL_DATABASE: linebot_db
+    ports:
+      - "3307:3306"  # ✅ 用 3307 避免和本機 MySQL 衝突
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pjjoo8989123"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
