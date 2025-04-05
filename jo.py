@@ -3,7 +3,6 @@ import os
 import mysql.connector
 from flask import Flask, request
 from dotenv import load_dotenv
-
 from datetime import datetime
 
 from linebot.v3.webhook import WebhookHandler
@@ -36,6 +35,21 @@ def get_db_connection():
         password=MYSQL_PASSWORD,
         database=MYSQL_DATABASE
     )
+
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS expenses (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            category VARCHAR(255),
+            amount INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+    print("✅ 資料表檢查 / 建立完成")
 
 def save_to_db(category, amount):
     conn = get_db_connection()
@@ -159,4 +173,5 @@ def save_expense(msg):
     return f"✅ 已記錄：\n類別：{category}\n金額：{amount}"
 
 if __name__ == "__main__":
+    init_db()  # 啟動時自動建立資料表
     app.run(host="0.0.0.0", port=5000, debug=True)
